@@ -91,6 +91,8 @@ public static class PieUI
         var totalItems = 0;
         foreach (var sh in children)
         {
+            if(!sh.CheckConditionSet()) continue;
+            
             ImGui.PushID(sh.ID);
 
             if (totalLevels < maxLevels && sh.Config.Type == ShortcutType.Category && sh.Config.Mode == ShortcutMode.Default)

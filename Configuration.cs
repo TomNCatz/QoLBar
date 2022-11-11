@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -100,6 +100,7 @@ public class ShCfg
     [JsonProperty("cHC")] [DefaultValue(false)]                public bool CategoryHoverClose = false;
 
     [JsonProperty("_i")]  [DefaultValue(0)]                    public int _i = 0;
+    [JsonProperty("cD")]  [DefaultValue(-1)]                   public int ConditionSet = -1;
 }
 
 public class CndSetCfg
