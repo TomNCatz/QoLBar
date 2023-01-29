@@ -66,8 +66,9 @@ namespace Gamepad
                     {
                         try
                         {
-                            ImGuiIOPtr io = ImGui.GetIO();
-                            //io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
+                            // state.Block((GamepadButtons)Button);
+                            // state.Block(GamepadButtons.DpadLeft);
+                            // state.Block(GamepadButtons.DpadUp);
                         }
                         catch
                         {
@@ -87,8 +88,6 @@ namespace Gamepad
                     {
                         try
                         {
-                            ImGuiIOPtr io = ImGui.GetIO();
-                            //io.ConfigFlags &= ~ImGuiConfigFlags.NavEnableGamepad;
                         }
                         catch
                         {
@@ -228,7 +227,7 @@ namespace Gamepad
             GamepadButtons.L2,
             GamepadButtons.L3,
             GamepadButtons.R1,
-            GamepadButtons.L2,
+            GamepadButtons.R2,
             GamepadButtons.R3,
             GamepadButtons.Select,
             GamepadButtons.Start,

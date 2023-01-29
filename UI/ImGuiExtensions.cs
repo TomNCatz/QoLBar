@@ -603,7 +603,8 @@ public static class ImGuiPie
         var di = GamepadBind.RightStick(QoLBar.GamepadState);
         if (di.HasValue)
         {
-            oDragDelta = di.Value * 3 * s_oPieMenuContext.m_fRadiusOverride * s_oPieMenuContext.m_fScale;
+            oDragDelta = di.Value * (PieMenuContext.c_iRadiusEmpty +
+                            2.5f * s_oPieMenuContext.m_fRadiusOverride * s_oPieMenuContext.m_fScale);
         }
         float fDragDistSqr = oDragDelta.X * oDragDelta.X + oDragDelta.Y * oDragDelta.Y;
 

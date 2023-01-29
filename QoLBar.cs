@@ -39,11 +39,11 @@ public class QoLBar : IDalamudPlugin
     private static bool fontEnabled = false;
 
     public QoLBar(DalamudPluginInterface pluginInterface,
+        SigScanner sigScanner,
         GamepadState gamepadState)
     {
         Plugin = this;
         DalamudApi.Initialize(this, pluginInterface);
-        GamepadState = gamepadState;
 
         Config = (Configuration)DalamudApi.PluginInterface.GetPluginConfig() ?? new();
         Config.Initialize();
@@ -56,6 +56,9 @@ public class QoLBar : IDalamudPlugin
         DalamudApi.PluginInterface.UiBuilder.Draw += Draw;
         ToggleFont(Config.FontSize != DefaultFontSize);
 
+        //GamepadState = new Gamepad.GamepadState(sigScanner);
+        GamepadState = gamepadState;
+        
         CheckHideOptOuts();
 
         ReadyPlugin();
@@ -305,6 +308,8 @@ public class QoLBar : IDalamudPlugin
         ToggleFont(false);
         DalamudApi.Dispose();
 
+        //(GamepadState as IDisposable)?.Dispose();
+        
         ui.Dispose();
         Game.Dispose();
         CleanTextures(true);
