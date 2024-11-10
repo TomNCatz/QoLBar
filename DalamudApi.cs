@@ -3,26 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Dalamud.Data;
 using Dalamud.Game;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Buddy;
-using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Fates;
-using Dalamud.Game.ClientState.JobGauge;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects;
-using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
-using Dalamud.Game.Gui.FlyText;
-using Dalamud.Game.Gui.PartyFinder;
 using Dalamud.Game.Gui.Toast;
-using Dalamud.Game.Libc;
-using Dalamud.Game.Network;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 // ReSharper disable CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Local
@@ -32,104 +20,120 @@ namespace Dalamud;
 public class DalamudApi
 {
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static DalamudPluginInterface PluginInterface { get; private set; }
+    public static IDalamudPluginInterface PluginInterface { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static BuddyList BuddyList { get; private set; }
+    public static IAddonEventManager AddonEventManager { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static ChatGui ChatGui { get; private set; }
+    public static IAddonLifecycle AddonLifecycle { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static ChatHandlers ChatHandlers { get; private set; }
+    public static IAetheryteList AetheryteList { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static ClientState ClientState { get; private set; }
+    public static IBuddyList BuddyList { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static CommandManager CommandManager { get; private set; }
+    public static IChatGui ChatGui { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static Condition Condition { get; private set; }
+    public static IClientState ClientState { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static DataManager DataManager { get; private set; }
+    public static ICommandManager CommandManager { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static FateTable FateTable { get; private set; }
+    public static ICondition Condition { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static FlyTextGui FlyTextGui { get; private set; }
+    public static IDataManager DataManager { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static Framework Framework { get; private set; }
+    public static IDtrBar DtrBar { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static GameGui GameGui { get; private set; }
+    public static IDutyState DutyState { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static GameNetwork GameNetwork { get; private set; }
+    public static IFateTable FateTable { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static JobGauges JobGauges { get; private set; }
+    public static IFlyTextGui FlyTextGui { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static KeyState KeyState { get; private set; }
+    public static IFramework Framework { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static LibcFunction LibcFunction { get; private set; }
+    public static IGameConfig GameConfig { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static ObjectTable ObjectTable { get; private set; }
+    public static IGameGui GameGui { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static PartyFinderGui PartyFinderGui { get; private set; }
+    public static IGameInteropProvider GameInteropProvider { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static PartyList PartyList { get; private set; }
+    public static IGameLifecycle GameLifecycle { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static SigScanner SigScanner { get; private set; }
+    public static IGameNetwork GameNetwork { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static TargetManager TargetManager { get; private set; }
+    public static IGamepadState GamepadState { get; private set; }
 
     [PluginService]
-    //[RequiredVersion("1.0")]
-    public static ToastGui ToastGui { get; private set; }
+    public static IJobGauges JobGauges { get; private set; }
+
+    [PluginService]
+    public static IKeyState KeyState { get; private set; }
+
+    [PluginService]
+    public static INotificationManager NotificationManager { get; private set; }
+
+    [PluginService]
+    public static IObjectTable ObjectTable { get; private set; }
+
+    [PluginService]
+    public static IPartyFinderGui PartyFinderGui { get; private set; }
+
+    [PluginService]
+    public static IPartyList PartyList { get; private set; }
+
+    [PluginService]
+    public static IPluginLog PluginLog { get; private set; }
+
+    [PluginService]
+    public static ISigScanner SigScanner { get; private set; }
+
+    [PluginService]
+    public static ITargetManager TargetManager { get; private set; }
+
+    [PluginService]
+    public static ITextureProvider TextureProvider { get; private set; }
+
+    [PluginService]
+    public static ITextureSubstitutionProvider TextureSubstitutionProvider { get; private set; }
+
+    [PluginService]
+    public static ITitleScreenMenu TitleScreenMenu { get; private set; }
+
+    [PluginService]
+    public static IToastGui ToastGui { get; private set; }
 
     private static PluginCommandManager<IDalamudPlugin> pluginCommandManager;
+    private const string printName = "QoL Bar";
+    private const string printHeader = $"[{printName}] ";
 
     public DalamudApi() { }
 
     public DalamudApi(IDalamudPlugin plugin) => pluginCommandManager ??= new(plugin);
 
-    public DalamudApi(IDalamudPlugin plugin, DalamudPluginInterface pluginInterface)
+    public DalamudApi(IDalamudPlugin plugin, IDalamudPluginInterface pluginInterface)
     {
         if (!pluginInterface.Inject(this))
         {
-            PluginLog.LogError("Failed loading DalamudApi!");
+            LogError("Failed loading DalamudApi!");
             return;
         }
 
@@ -148,7 +152,31 @@ public class DalamudApi
         throw new InvalidOperationException();
     }
 
-    public static void Initialize(IDalamudPlugin plugin, DalamudPluginInterface pluginInterface) => _ = new DalamudApi(plugin, pluginInterface);
+    public static void PrintEcho(string message) => ChatGui.Print($"{printHeader}{message}");
+
+    public static void PrintError(string message) => ChatGui.PrintError($"{printHeader}{message}");
+
+    public static void ShowNotification(string message, NotificationType type = NotificationType.None, uint msDelay = 3_000u) => NotificationManager.AddNotification(new Notification { Type = type, Title = printName, Content = message, InitialDuration = TimeSpan.FromMilliseconds(msDelay) });
+
+    public static void ShowToast(string message, ToastOptions options = null) => ToastGui.ShowNormal($"{printHeader}{message}", options);
+
+    public static void ShowQuestToast(string message, QuestToastOptions options = null) => ToastGui.ShowQuest($"{printHeader}{message}", options);
+
+    public static void ShowErrorToast(string message) => ToastGui.ShowError($"{printHeader}{message}");
+
+    public static void LogVerbose(string message, Exception exception = null) => PluginLog.Verbose(exception, message);
+
+    public static void LogDebug(string message, Exception exception = null) => PluginLog.Debug(exception, message);
+
+    public static void LogInfo(string message, Exception exception = null) => PluginLog.Information(exception, message);
+
+    public static void LogWarning(string message, Exception exception = null) => PluginLog.Warning(exception, message);
+
+    public static void LogError(string message, Exception exception = null) => PluginLog.Error(exception, message);
+
+    public static void LogFatal(string message, Exception exception = null) => PluginLog.Fatal(exception, message);
+
+    public static void Initialize(IDalamudPlugin plugin, IDalamudPluginInterface pluginInterface) => _ = new DalamudApi(plugin, pluginInterface);
 
     public static void Dispose() => pluginCommandManager?.Dispose();
 }
@@ -184,7 +212,7 @@ public class PluginCommandManager<T> : IDisposable where T : IDalamudPlugin
 
     private IEnumerable<(string, CommandInfo)> GetCommandInfoTuple(MethodInfo method)
     {
-        var handlerDelegate = (CommandInfo.HandlerDelegate)Delegate.CreateDelegate(typeof(CommandInfo.HandlerDelegate), plugin, method);
+        var handlerDelegate = (IReadOnlyCommandInfo.HandlerDelegate)Delegate.CreateDelegate(typeof(IReadOnlyCommandInfo.HandlerDelegate), plugin, method);
 
         var command = handlerDelegate.Method.GetCustomAttribute<CommandAttribute>();
         var aliases = handlerDelegate.Method.GetCustomAttribute<AliasesAttribute>();

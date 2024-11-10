@@ -2,23 +2,19 @@ using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
-using Dalamud.Game;
-using Dalamud.Game.Gui;
-using Dalamud.Logging;
+using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
-using ImGuiNET;
 
 // Disclaimer: I have no idea what I'm doing.
 namespace QoLBar;
 
 public class QoLBar : IDalamudPlugin
 {
-    public string Name => "QoL Bar";
     public static QoLBar Plugin { get; private set; }
     public static Configuration Config { get; private set; }
 
@@ -33,10 +29,9 @@ public class QoLBar : IDalamudPlugin
 
     public const float DefaultFontSize = 17;
     public const float MaxFontSize = 64;
-    public static ImFontPtr Font { get; private set; }
-    private static bool fontEnabled = false;
+    public static IFontHandle Font { get; private set; }
 
-    public QoLBar(DalamudPluginInterface pluginInterface)
+    public QoLBar(IDalamudPluginInterface pluginInterface)
     {
         Plugin = this;
         DalamudApi.Initialize(this, pluginInterface);
@@ -50,7 +45,7 @@ public class QoLBar : IDalamudPlugin
         ui = new PluginUI();
         DalamudApi.PluginInterface.UiBuilder.OpenConfigUi += ToggleConfig;
         DalamudApi.PluginInterface.UiBuilder.Draw += Draw;
-        ToggleFont(Config.FontSize != DefaultFontSize);
+        SetupFont();
 
         CheckHideOptOuts();
 
@@ -79,7 +74,7 @@ public class QoLBar : IDalamudPlugin
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Failed loading QoLBar!\n{e}");
+            DalamudApi.LogError($"Failed loading QoLBar!\n{e}");
         }
     }
 
@@ -162,13 +157,13 @@ public class QoLBar : IDalamudPlugin
             Game.StartPerformance(b);
     }
 
-    public static bool HasPlugin(string name) => DalamudApi.PluginInterface.PluginInternalNames.Contains(name);
+    public static bool HasPlugin(string name) => DalamudApi.PluginInterface.InstalledPlugins.Any(p => p.IsLoaded && p.InternalName == name);
 
     public static bool IsLoggedIn() => ConditionManager.CheckCondition("l");
 
     public static float RunTime => (float)DalamudApi.PluginInterface.LoadTimeDelta.TotalSeconds;
     public static long FrameCount => (long)DalamudApi.PluginInterface.UiBuilder.FrameCount;
-    private void Update(Framework framework)
+    private void Update(IFramework framework)
     {
         if (!pluginReady) return;
 
@@ -190,42 +185,20 @@ public class QoLBar : IDalamudPlugin
         ui.Draw();
     }
 
-    public void ToggleFont(bool enable)
+    public static void SetupFont()
     {
-        if (enable)
+        Font?.Dispose();
+        Font = DalamudApi.PluginInterface.UiBuilder.FontAtlas.NewDelegateFontHandle(buildToolkit =>
         {
-            if (!fontEnabled)
-                DalamudApi.PluginInterface.UiBuilder.BuildFonts += BuildFonts;
-            DalamudApi.PluginInterface.UiBuilder.RebuildFonts();
-            fontEnabled = true;
-        }
-        else
-        {
-            if (fontEnabled)
+            buildToolkit.OnPreBuild(tk =>
             {
-                DalamudApi.PluginInterface.UiBuilder.BuildFonts -= BuildFonts;
-                //DalamudApi.PluginInterface.UiBuilder.RebuildFonts();
-                Font = null;
-            }
-            fontEnabled = false;
-        }
-    }
-
-    private unsafe void BuildFonts()
-    {
-        var fontBuilder = new ImFontGlyphRangesBuilderPtr(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
-        var fontAtlas = ImGui.GetIO().Fonts;
-        fontBuilder.AddRanges(fontAtlas.GetGlyphRangesDefault());
-        fontBuilder.AddRanges(fontAtlas.GetGlyphRangesJapanese());
-        //fontBuilder.AddRanges(fontAtlas.GetGlyphRangesChineseFull()); // Includes Default and Japanese
-        fontBuilder.AddRanges(fontAtlas.GetGlyphRangesCyrillic());
-        //fontBuilder.AddRanges(fontAtlas.GetGlyphRangesKorean());
-        //fontBuilder.AddRanges(fontAtlas.GetGlyphRangesThai());
-        //fontBuilder.AddRanges(fontAtlas.GetGlyphRangesVietnamese());
-        fontBuilder.BuildRanges(out var ranges);
-        Font = fontAtlas.AddFontFromFileTTF(Path.Combine(DalamudApi.PluginInterface.DalamudAssetDirectory.FullName, "UIRes",
-            "NotoSansCJKjp-Medium.otf"), Math.Min(Math.Max(Config.FontSize, 1), MaxFontSize), null, ranges.Data);
-        fontBuilder.Destroy();
+                var config = new SafeFontConfig { SizePx = Math.Min(Math.Max(Config.FontSize, 1), MaxFontSize) };
+                var font = tk.AddDalamudAssetFont(DalamudAsset.NotoSansJpMedium, config);
+                config.MergeFont = font;
+                tk.AddGameSymbol(config);
+                tk.SetFontScaleMode(font, FontScaleMode.UndoGlobalScale);
+            });
+        });
     }
 
     public void CheckHideOptOuts()
@@ -298,7 +271,6 @@ public class QoLBar : IDalamudPlugin
         DalamudApi.Framework.Update -= Update;
         DalamudApi.PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfig;
         DalamudApi.PluginInterface.UiBuilder.Draw -= Draw;
-        ToggleFont(false);
         DalamudApi.Dispose();
 
         ui.Dispose();

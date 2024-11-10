@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ImGuiNET;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Logging;
 using QoLBar.Conditions;
 
@@ -226,7 +227,7 @@ public static class ConditionSetUI
                 }
                 catch (Exception e)
                 {
-                    PluginLog.Error($"Error while generating set {preset}!\n{e}");
+                    DalamudApi.LogError($"Error while generating set {preset}!\n{e}");
                 }
             }
 
@@ -408,7 +409,7 @@ public static class ConditionSetUI
                     }
                     catch (Exception e)
                     {
-                        PluginLog.Error($"Error while drawing {drawable}!\n{e}");
+                        DalamudApi.LogError($"Error while drawing {drawable}!\n{e}");
                     }
                 }
                 else if (ImGui.BeginCombo("##Condition", selectedCondition.ConditionName))
@@ -450,7 +451,7 @@ public static class ConditionSetUI
                 }
                 catch (Exception e)
                 {
-                    PluginLog.Error($"Error while drawing {drawable}!\n{e}");
+                    DalamudApi.LogError($"Error while drawing {drawable}!\n{e}");
                 }
             }
 

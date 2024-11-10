@@ -3,12 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using ImGuiNET;
-using Dalamud.Interface;
-using Dalamud.Logging;
+using Dalamud.Interface.Utility;
 
 namespace QoLBar;
 
@@ -282,7 +279,7 @@ public class PluginUI : IDisposable
         {
             QoLBar.Config.FontSize = Math.Min(Math.Max(QoLBar.Config.FontSize, 1), QoLBar.MaxFontSize);
             QoLBar.Config.Save();
-            QoLBar.Plugin.ToggleFont(QoLBar.Config.FontSize != QoLBar.DefaultFontSize);
+            QoLBar.SetupFont();
         }
         ImGuiEx.SetItemTooltip($"Default: {QoLBar.DefaultFontSize}");
 
@@ -290,16 +287,6 @@ public class PluginUI : IDisposable
         if (ImGui.InputInt("Backup Timer", ref QoLBar.Config.BackupTimer))
             QoLBar.Config.Save();
         ImGuiEx.SetItemTooltip("Number of minutes since the last save to perform a backup. Set to 0 to disable.");
-
-        if (IPC.PenumbraEnabled)
-        {
-            if (ImGui.Checkbox("Enable Penumbra Support", ref QoLBar.Config.UsePenumbra))
-            {
-                QoLBar.CleanTextures(false);
-                QoLBar.Config.Save();
-            }
-            ImGuiEx.SetItemTooltip("Loads icons from Penumbra.");
-        }
 
         ImGui.Spacing();
         ImGui.Spacing();
@@ -456,40 +443,34 @@ public class PluginUI : IDisposable
 
         ImGui.TextUnformatted("UI Module (Text Input Active)");
         ImGui.NextColumn();
-        ImGuiEx.TextCopyable($"{(IntPtr)Game.uiModule:X}");
+        ImGuiEx.TextCopyable($"{(nint)Game.uiModule:X}");
         ImGui.NextColumn();
         ImGui.TextUnformatted($"{Game.IsGameTextInputActive}");
         ImGui.NextColumn();
 
-        ImGui.TextUnformatted("Agent Module");
-        ImGui.NextColumn();
-        ImGuiEx.TextCopyable($"{(IntPtr)Game.agentModule:X}");
-        ImGui.NextColumn();
-        ImGui.NextColumn();
-
         ImGui.TextUnformatted("Rapture Shell Module");
         ImGui.NextColumn();
-        ImGuiEx.TextCopyable($"{(IntPtr)Game.raptureShellModule:X}");
+        ImGuiEx.TextCopyable($"{(nint)Game.raptureShellModule:X}");
         ImGui.NextColumn();
         ImGui.NextColumn();
 
         ImGui.TextUnformatted("Rapture Macro Module");
         ImGui.NextColumn();
-        ImGuiEx.TextCopyable($"{(IntPtr)Game.raptureMacroModule:X}");
+        ImGuiEx.TextCopyable($"{(nint)Game.raptureMacroModule:X}");
         ImGui.NextColumn();
         ImGui.TextUnformatted($"{Game.IsMacroRunning}");
         ImGui.NextColumn();
 
         ImGui.TextUnformatted("Addon Config (HUD Layout #)");
         ImGui.NextColumn();
-        ImGuiEx.TextCopyable($"{Game.addonConfig:X}");
+        ImGuiEx.TextCopyable($"{(nint)Game.addonConfig:X}");
         ImGui.NextColumn();
         ImGui.TextUnformatted($"{Game.CurrentHUDLayout}");
         ImGui.NextColumn();
 
         ImGui.TextUnformatted("Item Context Menu Agent");
         ImGui.NextColumn();
-        ImGuiEx.TextCopyable($"{Game.itemContextMenuAgent:X}");
+        ImGuiEx.TextCopyable($"{(nint)Game.agentInventoryContext:X}");
         ImGui.NextColumn();
         ImGui.NextColumn();
 
@@ -660,7 +641,7 @@ public class PluginUI : IDisposable
 
             var path = QoLBar.Config.GetPluginBackupPath() + $"\\{name}.json";
             file.CopyTo(path, overwrite);
-            PluginLog.LogInformation($"Saved file to {path}");
+            DalamudApi.LogInfo($"Saved file to {path}");
         }
         catch (Exception e)
         {
@@ -676,7 +657,7 @@ public class PluginUI : IDisposable
                 throw new InvalidOperationException("File must be json!");
 
             file.Delete();
-            PluginLog.LogInformation($"Deleted file {file.FullName}");
+            DalamudApi.LogInfo($"Deleted file {file.FullName}");
         }
         catch (Exception e)
         {
@@ -695,12 +676,12 @@ public class PluginUI : IDisposable
     {
         if (noViewport)
             ImGuiHelpers.ForceNextWindowMainViewport();
-        ImGui.PopFont();
+        QoLBar.Font.Pop();
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, defaultSpacing);
         ImGuiEx.PushFontSize(QoLBar.DefaultFontSize);
         draw();
         ImGuiEx.PopFontSize();
         ImGui.PopStyleVar();
-        ImGui.PushFont(QoLBar.Font);
+        QoLBar.Font.Push();
     }
 }

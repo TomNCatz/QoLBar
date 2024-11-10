@@ -2,8 +2,9 @@
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
-using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Lumina.Excel;
 
 namespace QoLBar;
@@ -189,7 +190,7 @@ public static class ImGuiEx
         public CooldownStyle cooldownStyle = CooldownStyle.None;
     }
 
-    public static void AddIcon(this ImDrawListPtr drawList, ImGuiScene.TextureWrap tex, Vector2 pos, IconSettings settings)
+    public static void AddIcon(this ImDrawListPtr drawList, IDalamudTextureWrap tex, Vector2 pos, IconSettings settings)
     {
         if (tex == null) return;
 
@@ -240,7 +241,7 @@ public static class ImGuiEx
     public static void AddIconFrame(this ImDrawListPtr drawList, Vector2 pos, Vector2 size, bool frame, bool hovered, float activeTime, float cooldownCurrent, float cooldownMax, IconSettings.CooldownStyle cooldownStyle)
     {
         var frameSheet = QoLBar.TextureDictionary[TextureDictionary.FrameIconID];
-        if (frameSheet == null || frameSheet.ImGuiHandle == IntPtr.Zero) return;
+        if (frameSheet == null || frameSheet.ImGuiHandle == nint.Zero) return;
 
         var halfSize = size / 2;
         var center = pos + halfSize;
@@ -266,7 +267,7 @@ public static class ImGuiEx
 
             if ((cooldownStyle & IconSettings.CooldownStyle.Number) != 0)
             {
-                ImGui.PushFont(QoLBar.Font);
+                QoLBar.Font.Push();
 
                 var wantedSize = size.X * 0.75f;
                 var str = $"{Math.Ceiling(cooldownMax - cooldownCurrent)}";
@@ -276,15 +277,18 @@ public static class ImGuiEx
                 var textSizeHalf = ImGui.CalcTextSize(str) / (2 * ImGuiHelpers.GlobalScale); // I don't know but it works
 
                 // Outline
-                var textOutlinePos = center - textSizeHalf + new Vector2(0, wantedSize * 0.05f);
-                drawList.AddText(QoLBar.Font, wantedSize, textOutlinePos, 0xFF000000, str);
+                using (var font = QoLBar.Font.Lock())
+                {
+                    var textOutlinePos = center - textSizeHalf + new Vector2(0, wantedSize * 0.05f);
+                    drawList.AddText(font.ImFont, wantedSize, textOutlinePos, 0xFF000000, str);
 
-                var textPos = center - textSizeHalf - Vector2.UnitY;
-                drawList.AddText(QoLBar.Font, wantedSize, textPos, 0xFFFFFFFF, str);
+                    var textPos = center - textSizeHalf - Vector2.UnitY;
+                    drawList.AddText(font.ImFont, wantedSize, textPos, 0xFFFFFFFF, str);
+                }
 
                 PopFontSize();
 
-                ImGui.PopFont();
+                QoLBar.Font.Pop();
             }
         }
 
@@ -324,7 +328,7 @@ public static class ImGuiEx
             _ => null
         };
 
-        if (cooldownSheet == null || cooldownSheet.ImGuiHandle == IntPtr.Zero) return;
+        if (cooldownSheet == null || cooldownSheet.ImGuiHandle == nint.Zero) return;
 
         var phase = (byte)Math.Min(Math.Max(Math.Ceiling(maxCooldownPhase * progress), 0), maxCooldownPhase);
         var row = Math.DivRem(phase, 9, out var column);
@@ -351,15 +355,15 @@ public static class ImGuiEx
         drawList.AddImage(cooldownSheet.ImGuiHandle, min, max, uv0, uv1);
     }
 
-    private static void DrawIcon(ImGuiScene.TextureWrap icon, IconSettings settings) => ImGui.GetWindowDrawList().AddIcon(icon, ImGui.GetItemRectMin(), settings);
+    private static void DrawIcon(IDalamudTextureWrap icon, IconSettings settings) => ImGui.GetWindowDrawList().AddIcon(icon, ImGui.GetItemRectMin(), settings);
 
-    public static void Icon(ImGuiScene.TextureWrap icon, IconSettings settings)
+    public static void Icon(IDalamudTextureWrap icon, IconSettings settings)
     {
         ImGui.Dummy(settings.size);
         DrawIcon(icon, settings);
     }
 
-    public static bool IconButton(string id, ImGuiScene.TextureWrap icon, IconSettings settings)
+    public static bool IconButton(string id, IDalamudTextureWrap icon, IconSettings settings)
     {
         var ret = ImGui.InvisibleButton(id, settings.size);
         settings.activeTime = (settings.activeTime >= 0) ? settings.activeTime : (ImGui.IsItemActive() ? -1 : 0);
