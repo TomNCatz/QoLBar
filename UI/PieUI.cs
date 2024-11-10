@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ImGuiNET;
+using Dalamud.Interface;
+using Gamepad;
 using Dalamud.Interface.Utility;
 using static QoLBar.ShCfg;
 
@@ -21,7 +23,7 @@ public static class PieUI
 
         foreach (var bar in QoLBar.Plugin.ui.bars)
         {
-            if (bar.Config.Hotkey > 0 && bar.CheckConditionSet())
+            if ((bar.Config.Hotkey > 0 || !GamepadBind.IsNullOrUnset(bar.Config.HotPad)) && bar.CheckConditionSet())
             {
                 ImGui.PushID(bar.ID);
 
@@ -90,6 +92,8 @@ public static class PieUI
         var totalItems = 0;
         foreach (var sh in children)
         {
+            if(!sh.CheckConditionSet()) continue;
+            
             ImGui.PushID(sh.ID);
 
             if (totalLevels < maxLevels && sh.Config.Type == ShortcutType.Category && sh.Config.Mode == ShortcutMode.Default)

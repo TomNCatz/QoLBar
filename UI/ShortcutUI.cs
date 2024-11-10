@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ImGuiNET;
 using Dalamud.Interface;
+using Gamepad;
 using Dalamud.Interface.Utility;
 using static QoLBar.ShCfg;
 
@@ -34,7 +35,8 @@ public class ShortcutUI : IDisposable
     private bool isCategoryHovered = false;
     private bool wasCategoryHovered = false;
     private float animTime = -1;
-
+    
+    public bool CheckConditionSet() => Config.ConditionSet < 0 || Config.ConditionSet >= QoLBar.Config.CndSetCfgs.Count || ConditionManager.CheckConditionSet(Config.ConditionSet);
     private bool IsConfigPopupOpen() => QoLBar.Plugin.ui.IsConfigPopupOpen();
     private void SetConfigPopupOpen() => QoLBar.Plugin.ui.SetConfigPopupOpen();
 
@@ -65,7 +67,7 @@ public class ShortcutUI : IDisposable
 
     public void SetupHotkeys()
     {
-        if (Config.Hotkey > 0 && Config.Type != ShortcutType.Spacer)
+        if ((Config.Hotkey > 0 || !GamepadBind.IsNullOrUnset(Config.HotPad))&& Config.Type != ShortcutType.Spacer)
             Keybind.AddHotkey(this);
 
         if (Config.Type == ShortcutType.Category)
@@ -434,8 +436,37 @@ public class ShortcutUI : IDisposable
                 ConfigEditorUI.EditShortcutColor(this);
 
                 if (Config.Type != ShortcutType.Spacer)
+                {
                     Keybind.KeybindInput(Config);
+                    GamepadBind pad = GamepadBind.DrawInputConfig(Config.HotPad, QoLBar.GamepadState);
+                    if(pad != null)
+                    {
+                        Config.HotPad = pad;
+                        QoLBar.Config.Save();
+                    }
+                }
 
+                var preview = ((Config.ConditionSet >= 0) && (Config.ConditionSet < QoLBar.Config.CndSetCfgs.Count)) ? $"[{Config.ConditionSet + 1}] {QoLBar.Config.CndSetCfgs[Config.ConditionSet].Name}" : "Condition Set";
+                if (ImGui.BeginCombo("##Condition", preview))
+                {
+                    if (ImGui.Selectable("None", Config.ConditionSet == -1))
+                    {
+                        Config.ConditionSet = -1;
+                        QoLBar.Config.Save();
+                    }
+                    for (int idx = 0; idx < QoLBar.Config.CndSetCfgs.Count; idx++)
+                    {
+                        if (ImGui.Selectable($"[{idx + 1}] {QoLBar.Config.CndSetCfgs[idx].Name}", idx == Config.ConditionSet))
+                        {
+                            Config.ConditionSet = idx;
+                            QoLBar.Config.Save();
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+                ImGuiEx.SetItemTooltip("Applies a condition set to the bar that will control when it is shown.\n" +
+                                       "Useful for making groups of bars that all display at the same time.\n" +
+                                       "You can make these on the \"Condition Sets\" tab at the top of this window.");
                 ImGui.EndTabItem();
             }
 

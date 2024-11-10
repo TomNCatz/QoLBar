@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.ImGuiNotification;
 using ImGuiNET;
+using Dalamud.Interface;
+using Dalamud.Interface.Internal.Notifications;
+using Gamepad;
 using Dalamud.Interface.Utility;
 using static QoLBar.BarCfg;
 using static QoLBar.ShCfg;
@@ -394,6 +397,12 @@ public static class ConfigEditorUI
         }
 
         Keybind.KeybindInput(bar.Config);
+        GamepadBind pad = GamepadBind.DrawInputConfig(bar.Config.HotPad, QoLBar.GamepadState);
+        if(pad != null)
+        {
+            bar.Config.HotPad = pad;
+            QoLBar.Config.Save();
+        }
 
         if (ImGui.Checkbox("Edit Mode", ref bar.Config.Editing))
         {
