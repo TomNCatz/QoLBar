@@ -6,9 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
 using Dalamud.Game;
-using Dalamud.Game.ClientState.GamePad;
-using Dalamud.Game.Gui;
-using Dalamud.Logging;
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -25,7 +22,7 @@ public class QoLBar : IDalamudPlugin
     public PluginUI ui;
     private bool pluginReady = false;
 
-    public static GamepadState GamepadState { get; private set; }
+    public static IGamepadState GamepadState { get; private set; }
     public static TextureDictionary TextureDictionary => Config.UseHRIcons ? textureDictionaryHR : textureDictionaryLR;
     public static readonly TextureDictionary textureDictionaryLR = new(false, false);
     public static readonly TextureDictionary textureDictionaryHR = new(true, false);
@@ -36,10 +33,8 @@ public class QoLBar : IDalamudPlugin
     public const float MaxFontSize = 64;
     public static IFontHandle Font { get; private set; }
 
-    public QoLBar(DalamudPluginInterface pluginInterface,
-        SigScanner sigScanner,
-        GamepadState gamepadState)
-    public QoLBar(IDalamudPluginInterface pluginInterface)
+    public QoLBar(IDalamudPluginInterface pluginInterface,
+        IGamepadState gamepadState)
     {
         Plugin = this;
         DalamudApi.Initialize(this, pluginInterface);
@@ -53,12 +48,10 @@ public class QoLBar : IDalamudPlugin
         ui = new PluginUI();
         DalamudApi.PluginInterface.UiBuilder.OpenConfigUi += ToggleConfig;
         DalamudApi.PluginInterface.UiBuilder.Draw += Draw;
-        ToggleFont(Config.FontSize != DefaultFontSize);
+        SetupFont();
 
         //GamepadState = new Gamepad.GamepadState(sigScanner);
         GamepadState = gamepadState;
-        
-        SetupFont();
 
         CheckHideOptOuts();
 

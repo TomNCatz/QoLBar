@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Interface;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
 
@@ -310,7 +311,7 @@ public class SanctuaryCondition : ICondition, IDrawableCondition
     public string ID => "is";
     public string ConditionName => "In Sanctuary";
     public int DisplayPriority => 0;
-    public bool Check(dynamic arg) => FFXIVClientStructs.FFXIV.Client.Game.GameMain.IsInSanctuary();
+    public unsafe bool Check(dynamic arg) => TerritoryInfo.Instance()->InSanctuary;
     public string GetTooltip(CndCfg cndCfg) => null;
     public string GetSelectableTooltip(CndCfg cndCfg) => "This refers to areas that accumulate rested experience.";
     public void Draw(CndCfg cndCfg) { }

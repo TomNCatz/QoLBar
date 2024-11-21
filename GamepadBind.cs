@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Numerics;
 using Dalamud.Game.ClientState.GamePad;
+using Dalamud.Plugin.Services;
 using ImGuiNET;
 
 namespace Gamepad
@@ -31,22 +32,22 @@ namespace Gamepad
             return ((GamepadButtons)Button).ToString();
         }
 
-        public bool IsPress(GamepadState state)
+        public bool IsPress(IGamepadState state)
         {
             return PressCheck(state).Item2;
         }
 
-        public bool IsRelease(GamepadState state)
+        public bool IsRelease(IGamepadState state)
         {
             return PressCheck(state).Item3;
         }
 
-        public bool IsActive(GamepadState state)
+        public bool IsActive(IGamepadState state)
         {
             return PressCheck(state).Item1;
         }
         
-        private (bool, bool, bool) PressCheck(GamepadState state)
+        private (bool, bool, bool) PressCheck(IGamepadState state)
         {
             if (Button <= 0) return (false, false, false);
             
@@ -99,32 +100,20 @@ namespace Gamepad
             return (active, press, release);
         }
         
-        public static Vector2? RightStick(GamepadState state)
+        public static Vector2? RightStick(IGamepadState state)
         {
-            if(state.RightStickRight 
-               + state.RightStickLeft 
-               + state.RightStickUp 
-               + state.RightStickDown 
-               > deadzone*2)
+            if(state.RightStick.X > deadzone 
+               || state.RightStick.X < -deadzone 
+               || state.RightStick.Y > deadzone 
+               || state.RightStick.Y < -deadzone )
             {
-                Vector2 di = new Vector2(state.RightStickRight, -state.RightStickUp);
-                
-                if (state.RightStickLeft > 0)
-                {
-                    di.X = -state.RightStickLeft;
-                }
-                if (state.RightStickDown > 0)
-                {
-                    di.Y = state.RightStickDown;
-                }
-                
-                return di;
+                return state.RightStick;
             }
 
             return null;
         }
 
-        public static GamepadBind DrawInputConfig(GamepadBind current, GamepadState state)
+        public static GamepadBind DrawInputConfig(GamepadBind current, IGamepadState state)
         {
             bool changed = false;
             if (current == null)
@@ -157,24 +146,24 @@ namespace Gamepad
             return false;
         }
 
-        public static bool IsPress(GamepadBind bind, GamepadState state)
+        public static bool IsPress(GamepadBind bind, IGamepadState state)
         {
             if (bind == null) return false;
             return bind.IsPress(state);
         }
 
-        public static bool IsRelease(GamepadBind bind, GamepadState state)
+        public static bool IsRelease(GamepadBind bind, IGamepadState state)
         {
             if (bind == null) return false;
             return bind.IsRelease(state);
         }
-        public static bool IsActive(GamepadBind bind, GamepadState state)
+        public static bool IsActive(GamepadBind bind, IGamepadState state)
         {
             if (bind == null) return false;
             return bind.IsActive(state);
         }
 
-        public bool InputHotPad(string id, GamepadState state)
+        public bool InputHotPad(string id, IGamepadState state)
         {
             var dispKey = ToString();
             ImGui.InputText($"{id}##{ToString()}", ref dispKey, 200,
@@ -207,7 +196,7 @@ namespace Gamepad
             return true;
         }
 
-        public GamepadButtons GetKeyPressed(GamepadState state)
+        public GamepadButtons GetKeyPressed(IGamepadState state)
         {
             GamepadButtons held = GamepadButtons.None;
             for (int i = 0; i < _supportedButtons.Length; i++)

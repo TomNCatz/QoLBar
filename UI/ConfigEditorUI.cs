@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.ImGuiNotification;
 using ImGuiNET;
-using Dalamud.Interface;
-using Dalamud.Interface.Internal.Notifications;
 using Gamepad;
 using Dalamud.Interface.Utility;
 using static QoLBar.BarCfg;
