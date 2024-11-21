@@ -62,19 +62,19 @@ namespace Gamepad
                     _held = true;
                     press = true;
                 
-                    // block keybind for the game?
-                    if (!PassThrough)
-                    {
-                        try
-                        {
-                            // state.Block((GamepadButtons)Button);
-                            // state.Block(GamepadButtons.DpadLeft);
-                            // state.Block(GamepadButtons.DpadUp);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    // block keybind for the game? haven't found a way to do this yet
+                    // if (!PassThrough)
+                    // {
+                    //     try
+                    //     {
+                    //         state.Block((GamepadButtons)Button);
+                    //         state.Block(GamepadButtons.DpadLeft);
+                    //         state.Block(GamepadButtons.DpadUp);
+                    //     }
+                    //     catch
+                    //     {
+                    //     }
+                    // }
                 }
             }
             else
@@ -107,7 +107,13 @@ namespace Gamepad
                || state.RightStick.Y > deadzone 
                || state.RightStick.Y < -deadzone )
             {
-                return state.RightStick;
+                float mag = state.RightStick.Length()/100;
+                if (mag > 1)
+                {
+                    return state.RightStick with { Y = -state.RightStick.Y } / state.RightStick.Length();
+                }
+                
+                return state.RightStick with { Y = -state.RightStick.Y }/100;
             }
 
             return null;

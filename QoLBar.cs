@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
-using Dalamud.Game;
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -50,7 +49,6 @@ public class QoLBar : IDalamudPlugin
         DalamudApi.PluginInterface.UiBuilder.Draw += Draw;
         SetupFont();
 
-        //GamepadState = new Gamepad.GamepadState(sigScanner);
         GamepadState = gamepadState;
 
         CheckHideOptOuts();
@@ -279,7 +277,7 @@ public class QoLBar : IDalamudPlugin
         DalamudApi.PluginInterface.UiBuilder.Draw -= Draw;
         DalamudApi.Dispose();
 
-        //(GamepadState as IDisposable)?.Dispose();
+        (GamepadState as IDisposable)?.Dispose();
         
         ui.Dispose();
         Game.Dispose();
