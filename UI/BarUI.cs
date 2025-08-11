@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using System.Collections.Generic;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using static QoLBar.BarCfg;
 
@@ -57,7 +57,7 @@ public class BarUI : IDisposable
     public static ShCfg tempSh;
 
     private Vector2 window = ImGuiHelpers.MainViewport.Size;
-    private Vector2 monitor = ImGui.GetPlatformIO().Monitors[0].MainSize;
+    private Vector2 monitor => ImGui.GetPlatformIO().Monitors[0].MainSize;
     public Vector2 UsableArea => IsDocked ? window : monitor;
 
     private Vector2 barSize = new(200, 38);
@@ -293,7 +293,7 @@ public class BarUI : IDisposable
 
             ImGuiEx.PushFontSize(QoLBar.DefaultFontSize * Config.Scale);
 
-            if (_mouseRevealed && ImGui.IsWindowHovered(ImGuiHoveredFlags.RectOnly))
+            if (_mouseRevealed && ImGui.IsWindowHovered(ImGuiHoveredFlags.AllowWhenBlockedByPopup | ImGuiHoveredFlags.AllowWhenBlockedByActiveItem))
                 Reveal();
 
             IsHovered = ImGui.IsWindowHovered();
@@ -311,12 +311,12 @@ public class BarUI : IDisposable
 
             ImGuiEx.PopFontSize();
 
+            QoLBar.Font.Pop();
+
             ImGui.End();
 
             ImGui.PopStyleColor();
             ImGui.PopStyleVar(3);
-
-            QoLBar.Font.Pop();
         }
 
         if (!_reveal)

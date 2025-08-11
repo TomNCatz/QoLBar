@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Interface;
 using Gamepad;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace QoLBar;
 
