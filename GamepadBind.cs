@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Numerics;
 using Dalamud.Game.ClientState.GamePad;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace Gamepad
 {
